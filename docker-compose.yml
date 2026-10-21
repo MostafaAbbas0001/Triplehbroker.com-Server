@@ -1,0 +1,63 @@
+name: tripleh-server
+
+services:
+  postgres:
+    container_name: tripleh-postgres
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in .env}
+      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in .env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+    ports:
+      - "127.0.0.1:5432:5432"
+
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      tripleh-network:
+        aliases:
+          - postgres
+
+  server:
+    container_name: tripleh-server
+    image: tripleh-server:latest
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
+      ASPNETCORE_URLS: http://+:8080
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB:?Set POSTGRES_DB in .env};Username=${POSTGRES_USER:?Set POSTGRES_USER in .env};Password=${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:${SERVER_PORT:-5041}:8080"
+    volumes:
+      - uploads:/app/Uploads
+    networks:
+      tripleh-network:
+        aliases:
+          - tripleh-server
+
+volumes:
+  uploads:
+    name: tripleh-server-uploads
+  postgres-data:
+    name: tripleh-postgres-data
+
+networks:
+  tripleh-network:
+    name: ${DOCKER_NETWORK_NAME:-tripleh-network}
+    external: true

@@ -1,0 +1,26 @@
+# Local secrets and overrides
+.env
+.env.*
+!.env.example
+appsettings.*.local.json
+
+# .NET output
+bin/
+obj/
+publish/
+.publish-check/
+TestResults/
+*.user
+*.suo
+*.cache
+*.log
+
+# IDE and operating system files
+.vs/
+.vscode/
+.idea/
+.DS_Store
+
+# Uploaded runtime media is persistent application data, not source code
+Uploads/*
+!Uploads/.gitkeep

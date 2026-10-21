@@ -1,0 +1,17 @@
+bin/
+obj/
+publish/
+.build-check/
+TestResults/
+Uploads/*
+!Uploads/.gitkeep
+*.log
+.env
+.env.*
+.git/
+.gitignore
+.vs/
+.vscode/
+.idea/
+Dockerfile*
+docker-compose*.yml
